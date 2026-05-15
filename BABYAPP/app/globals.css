@@ -1,26 +1,80 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Design tokens (light) ── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #FAFAF7;
+  --foreground: #1A1A1A;
+  --primary: #E8B4A0;
+  --primary-foreground: #1A1A1A;
+  --secondary: #A8C5BA;
+  --secondary-foreground: #1A1A1A;
+  --accent: #F5E6D3;
+  --accent-foreground: #1A1A1A;
+  --muted: #F0EFEA;
+  --muted-foreground: #6B6B6B;
+  --destructive: #C97064;
+  --destructive-foreground: #FFFFFF;
+  --success: #8FAE93;
+  --success-foreground: #1A1A1A;
+  --warning: #D4A574;
+  --warning-foreground: #1A1A1A;
+  --border: #E5E2DB;
+  --input: #E5E2DB;
+  --ring: #E8B4A0;
+  --radius: 1rem;
+}
+
+/* ── Design tokens (dark) ── */
+.dark {
+  --background: #1A1816;
+  --foreground: #E8E5E0;
+  --primary: #B8826E;
+  --primary-foreground: #E8E5E0;
+  --muted: #2A2825;
+  --muted-foreground: #9A9690;
+  --border: #2E2C28;
+  --input: #2E2C28;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 0.5rem);
+  --radius-md: calc(var(--radius) - 0.25rem);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.25rem);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0ms !important;
+    transition-duration: 0ms !important;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }

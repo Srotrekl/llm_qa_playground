@@ -10,7 +10,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import type { Nabidka } from "./lib/types.js";
-import { nactiCenik, spocitejNabidku } from "./lib/cenik-parser.js";
+import { nactiCenik, mapDphSazba, spocitejNabidku } from "./lib/cenik-parser.js";
 import { callClaudeExtractData, callClaudeGenerateOffer } from "./lib/claude.js";
 import { generujPDF, vytvorCisloNabidky } from "./lib/pdf-generator.js";
 
@@ -57,7 +57,11 @@ async function main(): Promise<void> {
   }
 
   // ── 4. Výpočet nabídky ───────────────────────────────────────────
-  const dphSazba = 21 as const; // pro MVP fixní sazba, logika dle typu zakázky přijde později
+  const dphSazba = mapDphSazba(extracted.kategorie_dph);
+  console.log(`[DPH] Kategorie: ${extracted.kategorie_dph} → sazba ${dphSazba} %`);
+  if (extracted.kategorie_dph === "neurceno") {
+    console.warn("[DPH] ⚠ Kategorie DPH neurčena — použita výchozí sazba 21 %");
+  }
   const vysledek = spocitejNabidku(extracted.polozky, cenik, dphSazba);
   console.log("\n[4/6] Nabídka spočítána:");
   console.log(`  Mezisoučet: ${vysledek.mezisoucet} Kč`);

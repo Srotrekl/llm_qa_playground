@@ -24,7 +24,8 @@ Vrať PŘESNĚ tento JSON formát (a nic jiného):
   ],
   "kontakt": { "jmeno": "...", "email": "...", "telefon": "..." },
   "termin": "...",
-  "poznamky": "..."
+  "poznamky": "...",
+  "kategorie_dph": "bytova_vystavba"
 }
 
 Pravidla — dodrž každé:
@@ -40,7 +41,12 @@ Pravidla — dodrž každé:
 5. "mnozstvi" musí být vždy číslo (integer nebo decimal), ne string.
 6. Zachovej českou diakritiku (ž, š, č, ř, ď, ť, ň, ě, á, í, é, ú, ů, ó, ý).
 7. "typ_prace" — jedno slovo, lowercase, bez tečky.
-8. "jednotka" — typicky "ks", "bm" (běžný metr), "hod", "komplet", "m2".`;
+8. "jednotka" — typicky "ks", "bm" (běžný metr), "hod", "komplet", "m2".
+9. "kategorie_dph" — rozhodni na základě kontextu emailu:
+   - "bytova_vystavba" = byt, rodinný dům, panelák, bytovka, rekonstrukce domácnosti → DPH 12 %
+   - "komercni" = kancelář, obchod, sklad, výrobna, restaurace, firma → DPH 21 %
+   - "neurceno" = z emailu nelze jednoznačně určit typ objektu
+   Toto pole VŽDY vyplň — nikdy nevynechávej.`;
 
 /** Sestaví user message pro extrakci — email je obalený do bezpečnostního tagu. */
 export function buildExtractUserMessage(emailText: string): string {

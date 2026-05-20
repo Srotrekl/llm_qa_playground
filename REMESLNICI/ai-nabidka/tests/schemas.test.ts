@@ -50,9 +50,23 @@ describe("ExtractedEmailDataSchema", () => {
       ...validniData,
       polozky: [{ nazev: "zásuvka", mnozstvi: -5, jednotka: "ks" }],
     });
-    // Zod z.number() záporná čísla nezakazuje, test ověřuje současné chování
-    // (mnozstvi je z.number() bez .nonnegative() — záměrně, Claude může vrátit 0)
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
+  });
+
+  it("odmítne mnozstvi přes 100 000", () => {
+    const result = ExtractedEmailDataSchema.safeParse({
+      ...validniData,
+      polozky: [{ nazev: "zásuvka", mnozstvi: 100001, jednotka: "ks" }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("odmítne nevalidní email v kontaktu", () => {
+    const result = ExtractedEmailDataSchema.safeParse({
+      ...validniData,
+      kontakt: { jmeno: "Jan Novák", email: "tohle-neni-email" },
+    });
+    expect(result.success).toBe(false);
   });
 
   it("odmítne prázdné pole polozky", () => {

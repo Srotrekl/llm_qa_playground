@@ -19,14 +19,14 @@ export const ExtractedEmailDataSchema = z.object({
     .array(
       z.object({
         nazev: z.string().min(1),
-        mnozstvi: z.number(),
+        mnozstvi: z.number().positive().max(100000),
         jednotka: z.string().min(1),
       }),
     )
     .min(1, "Odpověď neobsahuje žádné položky."),
   kontakt: z.object({
     jmeno: z.string().min(1),
-    email: z.string().optional(),
+    email: z.string().email().max(200).optional(),
     telefon: z.string().optional(),
   }),
   termin: z.string().optional(),

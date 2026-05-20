@@ -1,0 +1,34 @@
+{
+  "hodinove_sazby": {
+    "elektrikar_prvni_hodina": 500,
+    "elektrikar_dalsi_hodina": 270,
+    "revizni_technik": 650,
+    "vyjezd_pausal_3h": 1500
+  },
+  "polozky": [
+    { "nazev": "Zásuvka 230V montáž", "cena_ks": 350, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Vypínač jednoduchý", "cena_ks": 280, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Světelný bod", "cena_ks": 450, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Rozvody silnoproud", "cena_ks": 180, "jednotka": "bm", "typ": "material" },
+    { "nazev": "Rozvodnice 12 jističů", "cena_ks": 3500, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Datová zásuvka", "cena_ks": 420, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Sekání drážek panel", "cena_ks": 120, "jednotka": "bm", "typ": "prace" },
+    { "nazev": "Sekání drážek cihla", "cena_ks": 95, "jednotka": "bm", "typ": "prace" }
+  ],
+  "balicky": [
+    {
+      "nazev": "Komplet elektroinstalace byt 2+1 do 70m²",
+      "rozsah": "rozvody, zásuvky, vypínače, světla, rozvodnice",
+      "cena_od": 75000,
+      "cena_do": 110000
+    },
+    {
+      "nazev": "Komplet elektroinstalace byt 3+1 do 90m²",
+      "cena_od": 95000,
+      "cena_do": 140000
+    }
+  ],
+  "marze_material": 0.20,
+  "doprava_km": 15,
+  "min_naklady": 1500
+}

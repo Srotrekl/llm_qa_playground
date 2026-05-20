@@ -32,6 +32,7 @@ export const ExtractedEmailDataSchema = z.object({
   termin: z.string().optional(),
   poznamky: z.string().optional(),
   kategorie_dph: z.enum(["bytova_vystavba", "komercni", "neurceno"]).default("neurceno"),
+  vzdalenost_km: z.number().nonnegative().optional(),
 });
 
 export type ExtractedEmailDataFromSchema = z.infer<typeof ExtractedEmailDataSchema>;

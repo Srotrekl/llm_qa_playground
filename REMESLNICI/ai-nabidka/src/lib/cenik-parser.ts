@@ -267,29 +267,112 @@ export interface VysledekNabidky {
   dph_sazba: 12 | 21;
   dph_castka: number;
   celkem: number;
+  doprava: number;
+  min_naklady_pouzite: boolean;
+  marze_castka: number;
 }
 
 /**
- * Pro každou položku z emailu provede výpočet a sečte celkové sumy.
+ * Výpočet nabídky v přesném pořadí:
+ *   1. Matchování položek + aplikace marže na materiál (před součtem)
+ *   2. Součet položek (mezisoucet_polozky)
+ *   3. Kontrola min_naklady — pokud pod minimem, přidá virtuální položku
+ *   4. Přidá dopravu (nepočítá do min_naklady, marže se na ni neaplikuje)
+ *   5. Finální mezisoucet + DPH
  */
 export function spocitejNabidku(
   polozky: EmailPolozka[],
   cenik: Cenik,
   dphSazba: 12 | 21,
+  vzdalenost_km?: number,
 ): VysledekNabidky {
   console.log(`[VYPOCET] Počítám ${polozky.length} položek, DPH ${dphSazba} %`);
 
-  const spocitane: NabidkaPolozka[] = polozky.map((p) =>
-    spocitejPolozku(p.nazev, p.mnozstvi, cenik),
-  );
+  // ── 1. Matchování + marže na materiál ────────────────────────────
+  let marze_castka = 0;
+  const spocitane: NabidkaPolozka[] = polozky.map((emailPolozka) => {
+    const vysledek = najdiPolozku(emailPolozka.nazev, cenik);
 
+    if (!vysledek) {
+      return {
+        nazev: emailPolozka.nazev,
+        mnozstvi: emailPolozka.mnozstvi,
+        jednotka: "?",
+        cena_jednotka: 0,
+        celkem: 0,
+        neznama: true,
+      };
+    }
+
+    const { polozka, nizkaJistota } = vysledek;
+    let cenaJednotka = polozka.cena_ks;
+
+    if (polozka.typ === "material") {
+      const marze = polozka.cena_ks * cenik.marze_material;
+      cenaJednotka = polozka.cena_ks + marze;
+      marze_castka += marze * emailPolozka.mnozstvi;
+    }
+
+    return {
+      nazev: polozka.nazev,
+      mnozstvi: emailPolozka.mnozstvi,
+      jednotka: polozka.jednotka,
+      cena_jednotka: Math.round(cenaJednotka),
+      celkem: Math.round(cenaJednotka * emailPolozka.mnozstvi),
+      neznama: nizkaJistota || undefined,
+    };
+  });
+
+  // ── 2. Součet položek ─────────────────────────────────────────────
+  const mezisoucetPolozky = spocitane.reduce((sum, p) => sum + p.celkem, 0);
+
+  // ── 3. Kontrola min_naklady (bez dopravy) ────────────────────────
+  let min_naklady_pouzite = false;
+  if (mezisoucetPolozky < cenik.min_naklady && mezisoucetPolozky >= 0) {
+    const rozdil = cenik.min_naklady - mezisoucetPolozky;
+    spocitane.push({
+      nazev: "Minimální zakázka",
+      mnozstvi: 1,
+      jednotka: "komplet",
+      cena_jednotka: rozdil,
+      celkem: rozdil,
+    });
+    min_naklady_pouzite = true;
+    console.log(`[VYPOCET] Min. náklady: navýšeno o ${rozdil} Kč`);
+  }
+
+  // ── 4. Doprava (mimo min_naklady check, bez marže) ───────────────
+  let doprava = 0;
+  if (vzdalenost_km && vzdalenost_km > 0) {
+    const kmCelkem = vzdalenost_km * 2; // tam + zpět
+    doprava = Math.round(kmCelkem * cenik.doprava_km);
+    spocitane.push({
+      nazev: "Doprava",
+      mnozstvi: kmCelkem,
+      jednotka: "km",
+      cena_jednotka: cenik.doprava_km,
+      celkem: doprava,
+    });
+    console.log(`[VYPOCET] Doprava: ${kmCelkem} km × ${cenik.doprava_km} Kč = ${doprava} Kč`);
+  }
+
+  // ── 5. Finální mezisoučet + DPH ──────────────────────────────────
   const mezisoucet = spocitane.reduce((sum, p) => sum + p.celkem, 0);
   const dph_castka = Math.round((mezisoucet * dphSazba) / 100);
   const celkem = mezisoucet + dph_castka;
 
   console.log(
-    `[VYPOCET] ✓ Mezisoučet ${mezisoucet} Kč, DPH ${dph_castka} Kč, Celkem ${celkem} Kč`,
+    `[VYPOCET] ✓ Mezisoučet ${mezisoucet} Kč (marže ${Math.round(marze_castka)} Kč), DPH ${dph_castka} Kč, Celkem ${celkem} Kč`,
   );
 
-  return { polozky: spocitane, mezisoucet, dph_sazba: dphSazba, dph_castka, celkem };
+  return {
+    polozky: spocitane,
+    mezisoucet,
+    dph_sazba: dphSazba,
+    dph_castka,
+    celkem,
+    doprava,
+    min_naklady_pouzite,
+    marze_castka: Math.round(marze_castka),
+  };
 }

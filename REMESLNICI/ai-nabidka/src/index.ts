@@ -62,7 +62,7 @@ async function main(): Promise<void> {
   if (extracted.kategorie_dph === "neurceno") {
     console.warn("[DPH] ⚠ Kategorie DPH neurčena — použita výchozí sazba 21 %");
   }
-  const vysledek = spocitejNabidku(extracted.polozky, cenik, dphSazba);
+  const vysledek = spocitejNabidku(extracted.polozky, cenik, dphSazba, extracted.vzdalenost_km);
   console.log("\n[4/6] Nabídka spočítána:");
   console.log(`  Mezisoučet: ${vysledek.mezisoucet} Kč`);
   console.log(`  DPH ${dphSazba} %:   ${vysledek.dph_castka} Kč`);

@@ -25,7 +25,8 @@ Vrať PŘESNĚ tento JSON formát (a nic jiného):
   "kontakt": { "jmeno": "...", "email": "...", "telefon": "..." },
   "termin": "...",
   "poznamky": "...",
-  "kategorie_dph": "bytova_vystavba"
+  "kategorie_dph": "bytova_vystavba",
+  "vzdalenost_km": 12
 }
 
 Pravidla — dodrž každé:
@@ -46,7 +47,10 @@ Pravidla — dodrž každé:
    - "bytova_vystavba" = byt, rodinný dům, panelák, bytovka, rekonstrukce domácnosti → DPH 12 %
    - "komercni" = kancelář, obchod, sklad, výrobna, restaurace, firma → DPH 21 %
    - "neurceno" = z emailu nelze jednoznačně určit typ objektu
-   Toto pole VŽDY vyplň — nikdy nevynechávej.`;
+   Toto pole VŽDY vyplň — nikdy nevynechávej.
+10. "vzdalenost_km" — přibližná vzdálenost místa zakázky od Prahy (sídla firmy) v km.
+    Vyplň pouze pokud zákazník uvede konkrétní adresu nebo město mimo Prahu.
+    Ponech prázdné pokud není uvedeno nebo pokud je zakázka v Praze.`;
 
 /** Sestaví user message pro extrakci — email je obalený do bezpečnostního tagu. */
 export function buildExtractUserMessage(emailText: string): string {

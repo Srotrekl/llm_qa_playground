@@ -71,6 +71,8 @@ export interface ExtractedEmailData {
   poznamky?: string;
   /** Kategorie DPH určená Claudem podle kontextu emailu. */
   kategorie_dph: "bytova_vystavba" | "komercni" | "neurceno";
+  /** Přibližná vzdálenost zakázky od sídla firmy v km. Volitelné. */
+  vzdalenost_km?: number;
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -85,6 +87,8 @@ export interface CenikPolozka {
   cena_ks: number;
   /** Jednotka (ks, bm, hod, …). */
   jednotka: string;
+  /** Typ položky — "material" = navýší o marzi, "prace" = bez marže. Volitelné. */
+  typ?: "material" | "prace";
 }
 
 /** Předdefinovaný balíček prací (komplet rekonstrukce, …). */

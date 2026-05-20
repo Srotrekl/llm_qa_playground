@@ -17,10 +17,6 @@ import type {
   NabidkaPolozka,
 } from "./types.js";
 
-// Levenshtein distance threshold pro fallback fuzzy match.
-// Větší hodnota = víc falešných pozitiv, menší = víc nenalezených.
-const LEVENSHTEIN_THRESHOLD = 3;
-
 // Výchozí cesta k ceníku — relativně k tomuto souboru (src/lib → ../data)
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_CENIK_PATH = resolve(__dirname, "..", "data", "cenik-elektro.json");
@@ -136,46 +132,67 @@ function levenshtein(a: string, b: string): number {
 // 4. Fuzzy match položky v ceníku
 // ─────────────────────────────────────────────────────────────────────
 
+/** Interní výsledek najdiPolozku — přidává příznak nízké jistoty. */
+interface FuzzyVysledek {
+  polozka: CenikPolozka;
+  nizkaJistota: boolean;
+}
+
 /**
  * Najde nejlepší shodu mezi hledaným názvem a položkami v ceníku.
  *
- * Postup:
- *   1. Normalizuj hledaný název.
- *   2. Strategie A — token includes: pro každou položku ceníku rozsekej její
- *      název na tokeny a zkus, jestli některý token z hledaného obsahuje
- *      nebo je obsažen v některém tokenu položky.
- *   3. Strategie B — Levenshtein: pokud A neprošlo, najdi položku s nejmenší
- *      edit distance vůči celému normalizovanému názvu; pokud ≤ threshold,
- *      vrať ji.
+ * Strategie A (token includes, min 4 znaky):
+ *   Sbírá VŠECHNY shody s počtem matchujících tokenů, vrátí nejlepší
+ *   (tiebreaker = kratší název). Confidence < 50 % → nizkaJistota.
+ *   Guard: pokud žádný token nemá ≥ 4 znaky, vrátí null (zamezí dělení nulou).
  *
- * Vrací první nalezenou shodu nebo null.
+ * Strategie B (Levenshtein fallback):
+ *   Dynamický threshold = min(3, floor(délka/4)).
+ *   Confidence = vzdalenost/délka ≥ 0.5 → nizkaJistota.
  */
 export function najdiPolozku(
   nazev: string,
   cenik: Cenik,
-): CenikPolozka | null {
+): FuzzyVysledek | null {
   const hledanyNorm = normalizuj(nazev);
-  const hledanyTokeny = hledanyNorm.split(/\s+/).filter((t) => t.length >= 3);
+  const hledanyTokeny = hledanyNorm.split(/\s+/).filter((t) => t.length >= 4);
 
-  // Strategie A: token includes
-  for (const polozka of cenik.polozky) {
-    const polozkaNorm = normalizuj(polozka.nazev);
-    const polozkaTokeny = polozkaNorm.split(/\s+/);
+  // Guard: žádný token ≥ 4 znaky — nelze bezpečně matchovat, přeskočíme na B.
+  if (hledanyTokeny.length > 0) {
+    // Strategie A: sbírej všechny shody
+    const shody: { polozka: CenikPolozka; matchCount: number; totalTokens: number } [] = [];
 
-    // Hledáme jakýkoli významný token (≥3 znaky), který je v názvu položky.
-    const match = hledanyTokeny.some((ht) =>
-      polozkaTokeny.some((pt) => pt.includes(ht) || ht.includes(pt)),
-    );
+    for (const polozka of cenik.polozky) {
+      const polozkaNorm = normalizuj(polozka.nazev);
+      const polozkaTokeny = polozkaNorm.split(/\s+/).filter((t) => t.length >= 4);
+      if (polozkaTokeny.length === 0) continue;
 
-    if (match) {
-      console.log(
-        `[FUZZY] "${nazev}" → "${polozka.nazev}" (token match)`,
+      const matchCount = hledanyTokeny.filter((ht) =>
+        polozkaTokeny.some((pt) => pt.includes(ht) || ht.includes(pt)),
+      ).length;
+
+      if (matchCount > 0) {
+        shody.push({ polozka, matchCount, totalTokens: Math.max(hledanyTokeny.length, polozkaTokeny.length) });
+      }
+    }
+
+    if (shody.length > 0) {
+      // Seřaď: nejvíce matchů první, tiebreaker = kratší název
+      shody.sort((a, b) =>
+        b.matchCount - a.matchCount ||
+        a.polozka.nazev.length - b.polozka.nazev.length,
       );
-      return polozka;
+      const nejlepsi = shody[0]!;
+      const nizkaJistota = nejlepsi.matchCount / nejlepsi.totalTokens < 0.5;
+      console.log(
+        `[FUZZY] "${nazev}" → "${nejlepsi.polozka.nazev}" (token, ${nejlepsi.matchCount}/${nejlepsi.totalTokens} tokenů${nizkaJistota ? ", nízká jistota" : ""})`,
+      );
+      return { polozka: nejlepsi.polozka, nizkaJistota };
     }
   }
 
-  // Strategie B: Levenshtein fallback
+  // Strategie B: Levenshtein fallback s dynamickým thresholdem
+  const threshold = Math.min(3, Math.floor(hledanyNorm.length / 4));
   let nejlepsi: { polozka: CenikPolozka; vzdalenost: number } | null = null;
   for (const polozka of cenik.polozky) {
     const polozkaNorm = normalizuj(polozka.nazev);
@@ -185,11 +202,13 @@ export function najdiPolozku(
     }
   }
 
-  if (nejlepsi && nejlepsi.vzdalenost <= LEVENSHTEIN_THRESHOLD) {
+  if (nejlepsi && nejlepsi.vzdalenost <= threshold) {
+    const nizkaJistota = hledanyNorm.length > 0 &&
+      nejlepsi.vzdalenost / hledanyNorm.length >= 0.5;
     console.log(
-      `[FUZZY] "${nazev}" → "${nejlepsi.polozka.nazev}" (Levenshtein=${nejlepsi.vzdalenost})`,
+      `[FUZZY] "${nazev}" → "${nejlepsi.polozka.nazev}" (Levenshtein=${nejlepsi.vzdalenost}, threshold=${threshold}${nizkaJistota ? ", nízká jistota" : ""})`,
     );
-    return nejlepsi.polozka;
+    return { polozka: nejlepsi.polozka, nizkaJistota };
   }
 
   console.log(`[FUZZY] ✗ "${nazev}" nenalezeno v ceníku`);
@@ -209,9 +228,9 @@ export function spocitejPolozku(
   mnozstvi: number,
   cenik: Cenik,
 ): NabidkaPolozka {
-  const polozka = najdiPolozku(nazev, cenik);
+  const vysledek = najdiPolozku(nazev, cenik);
 
-  if (!polozka) {
+  if (!vysledek) {
     return {
       nazev,
       mnozstvi,
@@ -222,6 +241,7 @@ export function spocitejPolozku(
     };
   }
 
+  const { polozka, nizkaJistota } = vysledek;
   const celkem = mnozstvi * polozka.cena_ks;
   return {
     nazev: polozka.nazev,
@@ -229,6 +249,7 @@ export function spocitejPolozku(
     jednotka: polozka.jednotka,
     cena_jednotka: polozka.cena_ks,
     celkem,
+    neznama: nizkaJistota || undefined,
   };
 }
 

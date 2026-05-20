@@ -6,7 +6,7 @@
  */
 
 import "dotenv/config";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import type { Nabidka } from "./lib/types.js";
@@ -42,6 +42,7 @@ async function main(): Promise<void> {
   // Sanity check: každá extrahovaná položka by měla mít alespoň jedno
   // klíčové slovo (delší než 3 znaky, bez diakritiky) v původním emailu.
   // Varuje před položkami vloženými injection útokem.
+  const injectionWarnings: string[] = [];
   const emailNorm = emailText.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   for (const p of extracted.polozky) {
     const slovaNorm = p.nazev
@@ -52,7 +53,9 @@ async function main(): Promise<void> {
       .filter((s) => s.length > 3);
     const nalezeno = slovaNorm.some((slovo) => emailNorm.includes(slovo));
     if (!nalezeno) {
-      console.warn(`[BEZPEČNOST] ⚠ Položka nezmíněná v emailu: ${p.nazev}`);
+      const msg = `Položka nezmíněná v emailu: ${p.nazev}`;
+      injectionWarnings.push(msg);
+      console.warn(`[BEZPEČNOST] ⚠ ${msg}`);
     }
   }
 
@@ -98,6 +101,24 @@ async function main(): Promise<void> {
   const outputPath = resolve(OUTPUT_DIR, `${cislo}.pdf`);
   await generujPDF(nabidka, outputPath);
   console.log(`\n[6/6] ✓ Hotovo: output/${cislo}.pdf`);
+
+  // ── 8. JSON audit log ────────────────────────────────────────────
+  const auditLog = {
+    cislo,
+    datum: new Date().toISOString(),
+    email_raw: emailText,
+    extracted,
+    vysledek,
+    texty,
+    nabidka,
+    pdf_path: outputPath,
+    model: "claude-sonnet-4-6",
+    injection_warnings: injectionWarnings,
+  };
+  const auditPath = resolve(OUTPUT_DIR, `${cislo}.json`);
+  writeFileSync(auditPath, JSON.stringify(auditLog, null, 2), "utf-8");
+  console.log(`[AUDIT] Log uložen: output/${cislo}.json`);
+
   console.log("\n=== Nabídka úspěšně vygenerována ===");
 }
 

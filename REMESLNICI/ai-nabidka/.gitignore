@@ -1,0 +1,7 @@
+node_modules/
+dist/
+output/*.pdf
+output/*.json
+.env
+*.log
+.DS_Store

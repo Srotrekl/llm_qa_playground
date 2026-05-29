@@ -1,0 +1,184 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev, "dev/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: Lint
+  # ---------------------------------------------------------------------------
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install ruff
+        run: pip install ruff==0.9.1
+
+      - name: ruff check
+        run: ruff check .
+
+      - name: ruff format check
+        run: ruff format --check .
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Unit tests (evals library — no Ollama required)
+  # ---------------------------------------------------------------------------
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run evals unit tests
+        run: |
+          pytest tests/evals/ -v \
+            --junit-xml=junit-unit.xml \
+            --alluredir=allure-results
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-unit
+          path: allure-results/
+          retention-days: 7
+
+      - name: Upload JUnit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-unit
+          path: junit-unit.xml
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Job 3: Integration tests (API contract — Ollama required, fast subset)
+  # ---------------------------------------------------------------------------
+  integration-tests:
+    name: Integration tests (API)
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Start Ollama via Docker Compose
+        run: |
+          docker compose up -d ollama
+
+      - name: Pull model
+        run: |
+          # Wait for Ollama daemon to be ready, then pull the model
+          timeout 120 bash -c 'until docker compose exec -T ollama ollama list 2>/dev/null; do sleep 3; done'
+          docker compose exec -T ollama ollama pull llama3.2:1b
+
+      - name: Wait for model to be ready
+        run: |
+          timeout 300 bash -c '
+            until docker compose exec -T ollama ollama list 2>/dev/null | grep -q "llama3.2:1b"; do
+              echo "Waiting for model..."; sleep 5
+            done
+          '
+          echo "Model ready."
+
+      - name: Run API tests
+        env:
+          OLLAMA_URL: http://localhost:11434
+          MODEL_NAME: llama3.2:1b
+        run: |
+          pytest tests/api/ -m api -v \
+            --junit-xml=junit-integration.xml \
+            --alluredir=allure-results
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-integration
+          path: allure-results/
+          retention-days: 7
+
+      - name: Upload JUnit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-integration
+          path: junit-integration.xml
+          retention-days: 7
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down
+
+  # ---------------------------------------------------------------------------
+  # Job 4: Allure report → GitHub Pages (main branch only)
+  # ---------------------------------------------------------------------------
+  allure-report:
+    name: Publish Allure report
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    if: always() && github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download unit Allure results
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-unit
+          path: allure-results/
+
+      - name: Download integration Allure results
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-integration
+          path: allure-results/
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Allure CLI
+        run: npm install -g allure-commandline@2.32.0
+
+      - name: Generate Allure report
+        run: allure generate allure-results --clean -o allure-report
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./allure-report
+          publish_branch: gh-pages

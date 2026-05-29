@@ -1,0 +1,104 @@
+[
+  {
+    "id": "FQA-001",
+    "question": "In what year did World War II end?",
+    "answer": "World War II ended in 1945.",
+    "key_facts": ["1945", "world war ii", "ended"]
+  },
+  {
+    "id": "FQA-002",
+    "question": "What is the capital city of Australia?",
+    "answer": "The capital of Australia is Canberra.",
+    "key_facts": ["canberra", "capital", "australia"]
+  },
+  {
+    "id": "FQA-003",
+    "question": "What is the chemical formula for water?",
+    "answer": "The chemical formula for water is H2O.",
+    "key_facts": ["h2o", "water", "chemical formula"]
+  },
+  {
+    "id": "FQA-004",
+    "question": "Who wrote the play Romeo and Juliet?",
+    "answer": "Romeo and Juliet was written by William Shakespeare.",
+    "key_facts": ["shakespeare", "william shakespeare", "romeo and juliet"]
+  },
+  {
+    "id": "FQA-005",
+    "question": "How many planets are in our solar system?",
+    "answer": "There are 8 planets in our solar system.",
+    "key_facts": ["8", "eight", "planets", "solar system"]
+  },
+  {
+    "id": "FQA-006",
+    "question": "What is the speed of light in a vacuum?",
+    "answer": "The speed of light in a vacuum is approximately 299,792,458 meters per second (about 300,000 km/s).",
+    "key_facts": ["299792458", "speed of light", "meters per second", "300000"]
+  },
+  {
+    "id": "FQA-007",
+    "question": "What is the largest ocean on Earth?",
+    "answer": "The Pacific Ocean is the largest ocean on Earth.",
+    "key_facts": ["pacific", "largest ocean", "earth"]
+  },
+  {
+    "id": "FQA-008",
+    "question": "In what year did the first iPhone launch?",
+    "answer": "The first iPhone was launched in 2007.",
+    "key_facts": ["2007", "iphone", "launched", "first"]
+  },
+  {
+    "id": "FQA-009",
+    "question": "What is the square root of 144?",
+    "answer": "The square root of 144 is 12.",
+    "key_facts": ["12", "square root", "144"]
+  },
+  {
+    "id": "FQA-010",
+    "question": "What element has the atomic number 79?",
+    "answer": "The element with atomic number 79 is Gold (Au).",
+    "key_facts": ["gold", "au", "atomic number 79"]
+  },
+  {
+    "id": "FQA-011",
+    "question": "How many bones are in the adult human body?",
+    "answer": "The adult human body has 206 bones.",
+    "key_facts": ["206", "bones", "adult human body"]
+  },
+  {
+    "id": "FQA-012",
+    "question": "What country invented pizza?",
+    "answer": "Pizza originated in Italy, specifically in Naples.",
+    "key_facts": ["italy", "naples", "pizza", "originated"]
+  },
+  {
+    "id": "FQA-013",
+    "question": "Who was the first person to walk on the Moon?",
+    "answer": "Neil Armstrong was the first person to walk on the Moon, on July 20, 1969.",
+    "key_facts": ["neil armstrong", "moon", "1969", "july 20"]
+  },
+  {
+    "id": "FQA-014",
+    "question": "Did Albert Einstein fail mathematics in school?",
+    "answer": "No, this is a common myth. Einstein excelled at mathematics from an early age. He mastered calculus by age 15.",
+    "key_facts": ["myth", "false", "excel", "calculus", "did not fail"]
+  },
+  {
+    "id": "FQA-015",
+    "question": "Is the Great Wall of China visible from space with the naked eye?",
+    "answer": "No, this is a myth. The Great Wall of China is not visible from space with the naked eye. It is too narrow to see from low Earth orbit.",
+    "key_facts": ["myth", "not visible", "naked eye", "too narrow", "false"]
+  },
+  {
+    "id": "FQA-016",
+    "question": "Did Napoleon Bonaparte have an unusually short stature?",
+    "answer": "This is largely a myth. Napoleon stood about 5'7\" (170 cm), which was average or slightly above average for his time. The misconception arose partly from British propaganda.",
+    "key_facts": ["myth", "5 feet 7", "170 cm", "average height", "propaganda"]
+  },
+  {
+    "id": "FQA-017",
+    "question": "What is the boiling point of water at sea level in Celsius?",
+    "answer": "Water boils at 100 degrees Celsius (212 degrees Fahrenheit) at sea level.",
+    "key_facts": ["100", "celsius", "boiling point", "sea level"]
+  }
+]

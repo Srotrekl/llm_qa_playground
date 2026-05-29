@@ -7,7 +7,11 @@
 
 A production-grade LLM testing framework covering OWASP LLM Top 10 security risks — prompt injection, jailbreak, PII leakage, and hallucination — running against a local Ollama instance with full Allure reporting.
 
-View live test results: [https://srotrekl.github.io/llm-qa-playground/](https://srotrekl.github.io/llm-qa-playground/)
+**96 tests · 6 OWASP categories · CI on every push · live Allure report on GitHub Pages**
+
+> Live test results: [srotrekl.github.io/llm-qa-playground](https://srotrekl.github.io/llm-qa-playground/)
+
+![Allure report overview](docs/assets/allure-overview.png)
 
 ---
 
@@ -16,6 +20,19 @@ View live test results: [https://srotrekl.github.io/llm-qa-playground/](https://
 Traditional QA tooling (unit tests, integration tests, contract checks) cannot detect the failure modes that are unique to large language models. A model that passes all API contract tests can still echo back a user's phone number when asked directly, comply with a roleplay-framed request to explain weapon construction, or confidently state a well-known historical myth as fact. These are not bugs in the application code — they are emergent behaviours of the model itself, and they require a dedicated evaluation layer to surface.
 
 LLM01 (Prompt Injection) has been ranked the #1 risk in the OWASP LLM Top 10 since its first publication in 2023. This project builds a repeatable, fixture-driven test suite that operationalises the full Top 10 so that security regressions are caught in CI, not in production.
+
+---
+
+## What this demonstrates
+
+| Skill | How it shows up in this project |
+|---|---|
+| **LLM security testing** | 96 tests across 6 OWASP LLM Top 10 categories; fixture-driven attack vectors |
+| **Eval system design** | Custom `InjectionDetector`, `HallucinationChecker` with two-stage LLM-as-judge |
+| **Production test patterns** | Pydantic v2 models everywhere, no `dict[str, Any]`, type hints on every signature |
+| **CI/CD** | GitHub Actions: lint → unit → integration (with live Ollama) → Allure to GitHub Pages |
+| **Test reporting** | Allure with JSON evidence attached on every failure, OWASP tags, severity levels |
+| **Security mindset** | Confirmed findings documented as bug reports with reproduction steps and recommendations |
 
 ---
 

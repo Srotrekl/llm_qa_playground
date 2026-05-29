@@ -1,7 +1,7 @@
 # llm-qa-playground
 
-[![CI](https://github.com/Srotrekl/llm-qa-playground/actions/workflows/ci.yml/badge.svg)](https://github.com/Srotrekl/llm-qa-playground/actions/workflows/ci.yml)
-[![Allure Report](https://img.shields.io/badge/Allure-Report-blue?logo=github)](https://srotrekl.github.io/llm-qa-playground/)
+[![CI](https://github.com/Srotrekl/llm_qa_playground/actions/workflows/ci.yml/badge.svg)](https://github.com/Srotrekl/llm_qa_playground/actions/workflows/ci.yml)
+[![Allure Report](https://img.shields.io/badge/Allure-Report-blue?logo=github)](https://srotrekl.github.io/llm_qa_playground/)
 [![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
@@ -9,7 +9,7 @@ A production-grade LLM testing framework covering OWASP LLM Top 10 security risk
 
 **96 tests · 6 OWASP categories · CI on every push · live Allure report on GitHub Pages**
 
-> Live test results: [srotrekl.github.io/llm-qa-playground](https://srotrekl.github.io/llm-qa-playground/)
+> Live test results: [srotrekl.github.io/llm_qa_playground](https://srotrekl.github.io/llm_qa_playground/)
 
 ![Allure report overview](docs/assets/allure-overview.png)
 

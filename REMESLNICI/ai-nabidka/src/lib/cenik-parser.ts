@@ -15,6 +15,7 @@ import type {
   EmailPolozka,
   ExtractedEmailData,
   NabidkaPolozka,
+  Remeslo,
 } from "./types.js";
 
 // Výchozí cesta k ceníku — relativně k tomuto souboru (src/lib → ../data)
@@ -183,9 +184,17 @@ export function najdiPolozku(
         a.polozka.nazev.length - b.polozka.nazev.length,
       );
       const nejlepsi = shody[0]!;
-      const nizkaJistota = nejlepsi.matchCount / nejlepsi.totalTokens < 0.5;
+      const nejlepsiSkore = nejlepsi.matchCount / nejlepsi.totalTokens;
+
+      // nizkaJistota: buď slabá shoda (< 0.5), nebo tie — více kandidátů sdílí
+      // stejný matchCount a skóre není 100% → vítěz byl vybrán tiebreakerem tiše.
+      const pocetNejlepsich = shody.filter(
+        (s) => s.matchCount === nejlepsi.matchCount,
+      ).length;
+      const nizkaJistota = nejlepsiSkore < 0.5 || (nejlepsiSkore < 1.0 && pocetNejlepsich > 1);
+
       console.log(
-        `[FUZZY] "${nazev}" → "${nejlepsi.polozka.nazev}" (token, ${nejlepsi.matchCount}/${nejlepsi.totalTokens} tokenů${nizkaJistota ? ", nízká jistota" : ""})`,
+        `[FUZZY] "${nazev}" → "${nejlepsi.polozka.nazev}" (token, ${nejlepsi.matchCount}/${nejlepsi.totalTokens} tokenů${nizkaJistota ? ", nízká jistota" : ""}${pocetNejlepsich > 1 ? `, tie ${pocetNejlepsich} kandidátů` : ""})`,
       );
       return { polozka: nejlepsi.polozka, nizkaJistota };
     }
@@ -319,7 +328,7 @@ export function spocitejNabidku(
       jednotka: polozka.jednotka,
       cena_jednotka: Math.round(cenaJednotka),
       celkem: Math.round(cenaJednotka * emailPolozka.mnozstvi),
-      neznama: nizkaJistota || undefined,
+      nizkaJistota: nizkaJistota || undefined,
     };
   });
 
@@ -327,8 +336,11 @@ export function spocitejNabidku(
   const mezisoucetPolozky = spocitane.reduce((sum, p) => sum + p.celkem, 0);
 
   // ── 3. Kontrola min_naklady (bez dopravy) ────────────────────────
+  // Přeskočíme pokud existuje neznámá položka — součet je neúplný a doplněk
+  // by byl chybný (skutečná cena může min_naklady překračovat).
   let min_naklady_pouzite = false;
-  if (mezisoucetPolozky < cenik.min_naklady && mezisoucetPolozky >= 0) {
+  const maNeznamePolozky = spocitane.some((p) => p.neznama === true);
+  if (!maNeznamePolozky && mezisoucetPolozky < cenik.min_naklady && mezisoucetPolozky >= 0) {
     const rozdil = cenik.min_naklady - mezisoucetPolozky;
     spocitane.push({
       nazev: "Minimální zakázka",
@@ -339,6 +351,8 @@ export function spocitejNabidku(
     });
     min_naklady_pouzite = true;
     console.log(`[VYPOCET] Min. náklady: navýšeno o ${rozdil} Kč`);
+  } else if (maNeznamePolozky) {
+    console.warn("[VYPOCET] ⚠ Min. náklady přeskočeny — nabídka obsahuje položky bez ceny.");
   }
 
   // ── 4. Doprava (mimo min_naklady check, bez marže) ───────────────
@@ -375,4 +389,22 @@ export function spocitejNabidku(
     min_naklady_pouzite,
     marze_castka: Math.round(marze_castka),
   };
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// 5. Routing — výběr ceníku podle řemesla
+// ─────────────────────────────────────────────────────────────────────
+
+const CENIK_MAP: Record<Remeslo, string> = {
+  elektro: "cenik-elektro.json",
+  instalater: "cenik-instalater.json",
+  zednik: "cenik-zednik.json",
+};
+
+/** Vybere a načte správný ceník podle klasifikovaného řemesla. */
+export function vyberCenik(remeslo: Remeslo): Cenik {
+  const filename = CENIK_MAP[remeslo];
+  const filePath = resolve(__dirname, "..", "data", filename);
+  console.log(`[CENIK] Řemeslo: ${remeslo} → ${filename}`);
+  return nactiCenik(filePath);
 }

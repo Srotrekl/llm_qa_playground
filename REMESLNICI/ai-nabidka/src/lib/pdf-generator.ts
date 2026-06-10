@@ -10,6 +10,28 @@ import type { Nabidka, NabidkaPolozka } from "./types.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SABLONA_PATH = resolve(__dirname, "..", "data", "sablona.html");
+const FIRMA_PATH = resolve(__dirname, "..", "data", "firma.json");
+
+interface FirmaConfig {
+  nazev: string;
+  podnadpis: string;
+  adresa: string;
+  ico: string;
+  dic: string;
+  email: string;
+  telefon: string;
+}
+
+function nactiFiremniUdaje(): FirmaConfig {
+  const raw = readFileSync(FIRMA_PATH, "utf-8");
+  const firma = JSON.parse(raw) as FirmaConfig;
+  if (firma.ico === "12345678") {
+    throw new Error(
+      "[FIRMA] IČO je placeholder (12345678) — vyplňte src/data/firma.json před generováním nabídky.",
+    );
+  }
+  return firma;
+}
 
 // ─────────────────────────────────────────────────────────────────────
 // Pomocné utility
@@ -53,10 +75,20 @@ export function vytvorCisloNabidky(): string {
 /** Renderuje jeden <tr> řádek z šablony pro konkrétní položku nabídky. */
 function renderujRadek(sablonRadku: string, polozka: NabidkaPolozka): string {
   const neznama = polozka.neznama === true;
-  const nazevHtml = neznama ? `⚠ ${escapeHtml(polozka.nazev)}` : escapeHtml(polozka.nazev);
+  const nizkaJistota = polozka.neznama !== true && polozka.nizkaJistota === true;
+  const zvyraznit = neznama || nizkaJistota;
+
+  let nazevHtml: string;
+  if (neznama) {
+    nazevHtml = `⚠ ${escapeHtml(polozka.nazev)}`;
+  } else if (nizkaJistota) {
+    nazevHtml = `${escapeHtml(polozka.nazev)} <span class="nizka-jistota-poznamka">(ověřte přiřazení ceníku)</span>`;
+  } else {
+    nazevHtml = escapeHtml(polozka.nazev);
+  }
 
   return sablonRadku
-    .replace("{{neznama_class}}", neznama ? "nezname" : "")
+    .replace("{{neznama_class}}", zvyraznit ? "nezname" : "")
     .replace("{{nazev}}", nazevHtml)
     .replace("{{mnozstvi}}", String(polozka.mnozstvi))
     .replace("{{jednotka}}", escapeHtml(polozka.jednotka))
@@ -67,6 +99,19 @@ function renderujRadek(sablonRadku: string, polozka: NabidkaPolozka): string {
 // ─────────────────────────────────────────────────────────────────────
 // Sestavení upozorňovacího bloku pro neznámé položky
 // ─────────────────────────────────────────────────────────────────────
+
+/** Vrátí HTML banner "nabídka je neúplná" pokud existují neznámé položky, jinak prázdný string. */
+function sestavBannerNeuplne(polozky: NabidkaPolozka[]): string {
+  if (!polozky.some((p) => p.neznama === true)) return "";
+  return `
+  <div class="banner-neuplna">
+    <span class="banner-neuplna-icon">⚠</span>
+    <div>
+      <strong>Nabídka je orientační</strong> — obsahuje položky bez ceny (označeny žlutě).
+      Celková cena bude upřesněna po konzultaci.
+    </div>
+  </div>`;
+}
 
 /** Vrátí HTML blok s upozorněním na neznámé položky, nebo prázdný string. */
 function sestavUpozorneni(polozky: NabidkaPolozka[]): string {
@@ -98,7 +143,7 @@ function sestavUpozorneni(polozky: NabidkaPolozka[]): string {
  * Načte HTML šablonu, vyplní všechny placeholdery daty nabídky a vrátí
  * hotový HTML string připravený pro Puppeteer.
  */
-export function vyplnSablonu(template: string, nabidka: Nabidka): string {
+export function vyplnSablonu(template: string, nabidka: Nabidka, firma: FirmaConfig): string {
   // Extrahuj šablonu řádku tabulky mezi markery.
   const radekRegex =
     /<!-- POLOZKY_START -->([\s\S]*?)<!-- POLOZKY_END -->/;
@@ -129,11 +174,25 @@ export function vyplnSablonu(template: string, nabidka: Nabidka): string {
   ].filter(Boolean);
   const lokalitaText = lokalitaCasti.join(", ");
 
+  // Disclaimer DPH — zobrazí se pouze při neurceno kategorii.
+  const dphDisclaimerHtml = nabidka.dph_neurceno
+    ? `<div class="dph-disclaimer">⚠ Sazba DPH určena automaticky — ověřte správnost (12 % bytová výstavba / 21 % ostatní).</div>`
+    : "";
+
+  // Banner "nabídka neúplná" — zobrazí se nahoře před tabulkou.
+  const bannerHtml = sestavBannerNeuplne(nabidka.polozky);
   // Upozornění na neznámé položky (prázdný string = blok se nezobrazí).
   const upozorneniHtml = sestavUpozorneni(nabidka.polozky);
 
   // Replace skalárních placeholderů.
   html = html
+    .replace(/\{\{firma_nazev\}\}/g, escapeHtml(firma.nazev))
+    .replace(/\{\{firma_podnadpis\}\}/g, escapeHtml(firma.podnadpis))
+    .replace(/\{\{firma_adresa\}\}/g, escapeHtml(firma.adresa))
+    .replace(/\{\{firma_ico\}\}/g, escapeHtml(firma.ico))
+    .replace(/\{\{firma_dic\}\}/g, escapeHtml(firma.dic))
+    .replace(/\{\{firma_email\}\}/g, escapeHtml(firma.email))
+    .replace(/\{\{firma_telefon\}\}/g, escapeHtml(firma.telefon))
     .replace(/\{\{cislo\}\}/g, nabidka.cislo)
     .replace(/\{\{datum\}\}/g, nabidka.datum)
     .replace(/\{\{klient_jmeno\}\}/g, escapeHtml(nabidka.klient.jmeno))
@@ -146,7 +205,9 @@ export function vyplnSablonu(template: string, nabidka: Nabidka): string {
     .replace(/\{\{dph_sazba\}\}/g, String(nabidka.dph_sazba))
     .replace(/\{\{dph_castka\}\}/g, formatCislo(nabidka.dph_castka))
     .replace(/\{\{celkem\}\}/g, formatCislo(nabidka.celkem))
-    .replace(/\{\{upozorneni_blok\}\}/g, upozorneniHtml);
+    .replace(/\{\{upozorneni_blok\}\}/g, upozorneniHtml)
+    .replace(/\{\{banner_neuplna_nabidka\}\}/g, bannerHtml)
+    .replace(/\{\{dph_disclaimer\}\}/g, dphDisclaimerHtml);
 
   return html;
 }
@@ -170,9 +231,12 @@ export async function generujPDF(
   const outputDir = dirname(outputPath);
   mkdirSync(outputDir, { recursive: true });
 
+  // Načti firemní údaje (hází chybu pokud je IČO placeholder).
+  const firma = nactiFiremniUdaje();
+
   // Načti a vyplň šablonu.
   const template = readFileSync(SABLONA_PATH, "utf-8");
-  const html = vyplnSablonu(template, nabidka);
+  const html = vyplnSablonu(template, nabidka, firma);
 
   let browser;
   try {

@@ -10,7 +10,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import type { Nabidka } from "./lib/types.js";
-import { nactiCenik, mapDphSazba, spocitejNabidku } from "./lib/cenik-parser.js";
+import { vyberCenik, mapDphSazba, spocitejNabidku } from "./lib/cenik-parser.js";
 import { callClaudeExtractData, callClaudeGenerateOffer } from "./lib/claude.js";
 import { generujPDF, vytvorCisloNabidky } from "./lib/pdf-generator.js";
 
@@ -27,17 +27,17 @@ async function main(): Promise<void> {
   const emailText = readFileSync(EMAIL_PATH, "utf-8");
   console.log("[1/6] Email načten\n");
 
-  // ── 2. Načti ceník ───────────────────────────────────────────────
-  const cenik = nactiCenik();
-  console.log(
-    `[2/6] Ceník načten: ${cenik.polozky.length} položek, ${cenik.balicky.length} balíčků\n`,
-  );
-
-  // ── 3. Claude Call #1 — extrakce dat z emailu ───────────────────
+  // ── 2. Claude Call #1 — extrakce dat z emailu ───────────────────
   const extracted = await callClaudeExtractData(emailText);
-  console.log("[3/6] Data extrahována:");
+  console.log("[2/6] Data extrahována:");
   console.log(JSON.stringify(extracted, null, 2));
   console.log();
+
+  // ── 3. Načti ceník podle řemesla ─────────────────────────────────
+  const cenik = vyberCenik(extracted.remeslo);
+  console.log(
+    `[3/6] Ceník načten: ${cenik.polozky.length} položek, ${cenik.balicky.length} balíčků\n`,
+  );
 
   // Sanity check: každá extrahovaná položka by měla mít alespoň jedno
   // klíčové slovo (delší než 3 znaky, bez diakritiky) v původním emailu.
@@ -95,6 +95,7 @@ async function main(): Promise<void> {
     celkem: vysledek.celkem,
     text_uvod: texty.text_uvod,
     text_zaver: texty.text_zaver,
+    dph_neurceno: extracted.kategorie_dph === "neurceno" || undefined,
   };
 
   // ── 7. Generování PDF ────────────────────────────────────────────
@@ -106,6 +107,8 @@ async function main(): Promise<void> {
   const auditLog = {
     cislo,
     datum: new Date().toISOString(),
+    remeslo: extracted.remeslo,
+    cenik_pouzity: `cenik-${extracted.remeslo}.json`,
     email_raw: emailText,
     extracted,
     vysledek,

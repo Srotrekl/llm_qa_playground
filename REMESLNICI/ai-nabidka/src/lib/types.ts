@@ -15,6 +15,9 @@
  */
 export type TypPrace = string;
 
+/** Klasifikované řemeslo — určuje, který ceník se použije pro výpočet nabídky. */
+export type Remeslo = "elektro" | "instalater" | "zednik";
+
 /** Lokalita zakázky. */
 export interface Lokalita {
   /** Město (např. "Praha"). */
@@ -57,6 +60,8 @@ export interface Kontakt {
 export interface ExtractedEmailData {
   /** Typ poptávaných prací. */
   typ_prace: TypPrace;
+  /** Klasifikované řemeslo — určuje výběr ceníku. */
+  remeslo: Remeslo;
   /** Lokalita zakázky. */
   lokalita: Lokalita;
   /** Rozsah prací. */
@@ -103,7 +108,7 @@ export interface CenikBalicek {
   cena_do: number;
 }
 
-/** Kompletní ceník elektrofirmy. */
+/** Kompletní ceník řemeslné firmy. */
 export interface Cenik {
   /** Hodinové sazby (např. elektrikar_prvni_hodina, revizni_technik, …). */
   hodinove_sazby: Record<string, number>;
@@ -137,6 +142,8 @@ export interface NabidkaPolozka {
   celkem: number;
   /** True = položka nenalezena v ceníku → v PDF se zvýrazní žlutě s ⚠. */
   neznama?: boolean;
+  /** True = fuzzy match byl nejistý (tie nebo slabá shoda) → v PDF žlutě s poznámkou "ověřte". */
+  nizkaJistota?: boolean;
 }
 
 /** Finální nabídka připravená k vyrenderování do PDF. */
@@ -163,4 +170,6 @@ export interface Nabidka {
   text_uvod?: string;
   /** Závěrečný odstavec (platnost, výzva k upřesnění). Volitelné. */
   text_zaver?: string;
+  /** True = kategorie DPH nebyla LLM jednoznačně určena → zobrazit disclaimer v PDF. */
+  dph_neurceno?: boolean;
 }

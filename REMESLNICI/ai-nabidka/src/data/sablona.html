@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cenová nabídka {{cislo}}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 20mm 15mm 20mm 15mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      font-size: 13px;
+      color: #1f2937;
+      line-height: 1.5;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* ── Hlavička ───────────────────────────────────────────── */
+
+    .hlavicka {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-bottom: 20px;
+      border-bottom: 3px solid #1e3a8a;
+      margin-bottom: 24px;
+    }
+
+    .firma-nazev {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1e3a8a;
+      letter-spacing: 0.5px;
+    }
+
+    .firma-podnadpis {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+
+    .firma-kontakt {
+      font-size: 11px;
+      color: #4b5563;
+      text-align: right;
+      line-height: 1.7;
+    }
+
+    .nabidka-meta {
+      background-color: #1e3a8a;
+      color: #ffffff;
+      border-radius: 6px;
+      padding: 10px 16px;
+      text-align: right;
+      min-width: 200px;
+    }
+
+    .nabidka-meta .meta-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      opacity: 0.75;
+    }
+
+    .nabidka-meta .meta-hodnota {
+      font-size: 15px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .nabidka-meta .meta-datum {
+      font-size: 11px;
+      margin-top: 6px;
+      opacity: 0.85;
+    }
+
+    /* ── Klient blok ────────────────────────────────────────── */
+
+    .klient-blok {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      background-color: #f8fafc;
+      border-left: 4px solid #1e3a8a;
+      border-radius: 0 6px 6px 0;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+    }
+
+    .klient-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+
+    .klient-jmeno {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1e3a8a;
+    }
+
+    .klient-kontakt {
+      font-size: 11px;
+      color: #4b5563;
+      margin-top: 3px;
+    }
+
+    .lokalita-blok {
+      text-align: right;
+    }
+
+    .lokalita-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+
+    .lokalita-hodnota {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    /* ── Sekce nadpisy ──────────────────────────────────────── */
+
+    .sekce-nadpis {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #1e3a8a;
+      margin-bottom: 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #dbeafe;
+    }
+
+    /* ── Úvodní text ────────────────────────────────────────── */
+
+    .uvodni-text {
+      color: #374151;
+      margin-bottom: 24px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    /* ── Tabulka položek ────────────────────────────────────── */
+
+    .polozky-sekce {
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    thead tr {
+      background-color: #1e3a8a;
+      color: #ffffff;
+    }
+
+    thead th {
+      padding: 9px 10px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    thead th.right {
+      text-align: right;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+
+    tbody tr:hover {
+      background-color: #eff6ff;
+    }
+
+    tbody td {
+      padding: 8px 10px;
+      color: #1f2937;
+    }
+
+    tbody td.right {
+      text-align: right;
+    }
+
+    tbody td.bold {
+      font-weight: 600;
+    }
+
+    /* Neznámá položka — žluté zvýraznění */
+    tr.nezname {
+      background-color: #fff3cd !important;
+    }
+
+    tr.nezname td {
+      color: #92400e;
+    }
+
+    /* ── Souhrn ─────────────────────────────────────────────── */
+
+    .souhrn-wrapper {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 24px;
+    }
+
+    .souhrn {
+      min-width: 280px;
+    }
+
+    .souhrn-radek {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      font-size: 13px;
+      color: #374151;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .souhrn-radek:last-child {
+      border-bottom: none;
+    }
+
+    .souhrn-radek.celkem {
+      padding-top: 10px;
+      margin-top: 4px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e3a8a;
+      border-top: 2px solid #1e3a8a;
+      border-bottom: none;
+    }
+
+    .souhrn-radek span:last-child {
+      font-weight: 600;
+    }
+
+    .souhrn-radek.celkem span:last-child {
+      font-weight: 800;
+    }
+
+    /* ── Závěrečný text ─────────────────────────────────────── */
+
+    .zaverecny-text {
+      color: #374151;
+      margin-bottom: 30px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    /* ── Upozornění na neznámé položky ─────────────────────── */
+
+    .upozorneni {
+      background-color: #fffbeb;
+      border: 1px solid #fbbf24;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 11px;
+      color: #92400e;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .upozorneni-icon {
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    /* ── Patička ────────────────────────────────────────────── */
+
+    .paticka {
+      margin-top: 40px;
+      padding-top: 14px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: #9ca3af;
+    }
+
+    .paticka-ai {
+      font-style: italic;
+    }
+
+    /* ── Banner: neúplná nabídka ────────────────────────────── */
+
+    .banner-neuplna {
+      background: #fff3cd;
+      border: 2px solid #f59e0b;
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: #92400e;
+    }
+
+    .banner-neuplna-icon {
+      font-size: 18px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .nizka-jistota-poznamka {
+      font-size: 10px;
+      font-style: italic;
+      color: #92400e;
+    }
+
+    .dph-disclaimer {
+      font-size: 10px;
+      color: #6b7280;
+      font-style: italic;
+      margin-top: 3px;
+      padding: 4px 8px;
+      background: #f9fafb;
+      border-left: 3px solid #f59e0b;
+    }
+
+    /* ── Print utility ──────────────────────────────────────── */
+
+    @media print {
+      body {
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- 1. HLAVIČKA                                            -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="hlavicka">
+    <div>
+      <div class="firma-nazev">{{firma_nazev}}</div>
+      <div class="firma-podnadpis">{{firma_podnadpis}}</div>
+      <div class="firma-kontakt" style="text-align:left; margin-top:8px;">
+        {{firma_adresa}}<br />
+        IČO: {{firma_ico}} &nbsp;|&nbsp; DIČ: {{firma_dic}}<br />
+        {{firma_email}} &nbsp;|&nbsp; {{firma_telefon}}
+      </div>
+    </div>
+    <div class="nabidka-meta">
+      <div class="meta-label">Číslo nabídky</div>
+      <div class="meta-hodnota">{{cislo}}</div>
+      <div class="meta-datum">Vystaveno: {{datum}}</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- 2. KLIENT BLOK                                         -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="klient-blok">
+    <div>
+      <div class="klient-label">Pro klienta</div>
+      <div class="klient-jmeno">{{klient_jmeno}}</div>
+      <div class="klient-kontakt">{{klient_email}} &nbsp;|&nbsp; {{klient_telefon}}</div>
+    </div>
+    <div class="lokalita-blok">
+      <div class="lokalita-label">Místo realizace</div>
+      <div class="lokalita-hodnota">{{lokalita}}</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- 3. ÚVODNÍ TEXT                                         -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="sekce-nadpis">Průvodní text</div>
+  <div class="uvodni-text">{{text_uvod}}</div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- BANNER: neúplná nabídka (zobrazí se jen při neznámých) -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  {{banner_neuplna_nabidka}}
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- 4. TABULKA POLOŽEK                                     -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="polozky-sekce">
+    <div class="sekce-nadpis">Specifikace prací a materiálu</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:38%">Položka</th>
+          <th class="right" style="width:12%">Množství</th>
+          <th style="width:10%">Jednotka</th>
+          <th class="right" style="width:18%">Cena / ks (Kč)</th>
+          <th class="right" style="width:22%">Celkem (Kč)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- POLOZKY_START -->
+        <tr class="{{neznama_class}}">
+          <td>{{nazev}}</td>
+          <td class="right">{{mnozstvi}}</td>
+          <td>{{jednotka}}</td>
+          <td class="right">{{cena_jednotka}}</td>
+          <td class="right bold">{{celkem}}</td>
+        </tr>
+        <!-- POLOZKY_END -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- 5. SOUHRN                                              -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="souhrn-wrapper">
+    <div class="souhrn">
+      <div class="souhrn-radek">
+        <span>Mezisoučet bez DPH</span>
+        <span>{{mezisoucet}} Kč</span>
+      </div>
+      <div class="souhrn-radek">
+        <span>DPH {{dph_sazba}} %</span>
+        <span>{{dph_castka}} Kč</span>
+      </div>
+      {{dph_disclaimer}}
+      <div class="souhrn-radek celkem">
+        <span>Celkem k úhradě</span>
+        <span>{{celkem}} Kč</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- UPOZORNĚNÍ (zobrazí se jen pokud existují neznámé)     -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  {{upozorneni_blok}}
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- 6. ZÁVĚREČNÝ TEXT                                      -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="sekce-nadpis">Závěr nabídky</div>
+  <div class="zaverecny-text">{{text_zaver}}</div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- 7. PATIČKA                                             -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="paticka">
+    <span>{{firma_nazev}} &nbsp;|&nbsp; {{firma_email}} &nbsp;|&nbsp; {{firma_telefon}}</span>
+    <span class="paticka-ai">Nabídka vygenerována automaticky systémem AI Nabídka &nbsp;|&nbsp; {{datum}}</span>
+  </div>
+
+</body>
+</html>

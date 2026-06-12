@@ -7,7 +7,7 @@
   <style>
     @page {
       size: A4;
-      margin: 20mm 15mm 20mm 15mm;
+      margin: 18mm 18mm 18mm 18mm;
     }
 
     * {
@@ -189,6 +189,8 @@
 
     tbody tr {
       border-bottom: 1px solid #e5e7eb;
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
 
     tbody tr:nth-child(even) {
@@ -286,6 +288,9 @@
       display: flex;
       align-items: flex-start;
       gap: 8px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+      break-before: avoid;
     }
 
     .upozorneni-icon {
@@ -299,15 +304,18 @@
       margin-top: 40px;
       padding-top: 14px;
       border-top: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 10px;
+      font-size: 9px;
       color: #9ca3af;
+      white-space: nowrap;
+      text-align: center;
     }
 
-    .paticka-ai {
-      font-style: italic;
+    .paticka-brandmark {
+      margin-top: 6px;
+      text-align: center;
+      font-size: 9px;
+      letter-spacing: 0.4px;
+      color: #9ca3af;
     }
 
     /* ── Banner: neúplná nabídka ────────────────────────────── */
@@ -323,6 +331,8 @@
       gap: 10px;
       font-size: 13px;
       color: #92400e;
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
 
     .banner-neuplna-icon {
@@ -367,7 +377,7 @@
       <div class="firma-podnadpis">{{firma_podnadpis}}</div>
       <div class="firma-kontakt" style="text-align:left; margin-top:8px;">
         {{firma_adresa}}<br />
-        IČO: {{firma_ico}} &nbsp;|&nbsp; DIČ: {{firma_dic}}<br />
+        {{ico_dic_radek}}<br />
         {{firma_email}} &nbsp;|&nbsp; {{firma_telefon}}
       </div>
     </div>
@@ -469,9 +479,9 @@
   <!-- 7. PATIČKA                                             -->
   <!-- ═══════════════════════════════════════════════════════ -->
   <div class="paticka">
-    <span>{{firma_nazev}} &nbsp;|&nbsp; {{firma_email}} &nbsp;|&nbsp; {{firma_telefon}}</span>
-    <span class="paticka-ai">Nabídka vygenerována automaticky systémem AI Nabídka &nbsp;|&nbsp; {{datum}}</span>
+    {{firma_nazev}} &nbsp;|&nbsp; {{firma_email}} &nbsp;|&nbsp; {{firma_telefon}}
   </div>
+  {{brandmark}}
 
 </body>
 </html>

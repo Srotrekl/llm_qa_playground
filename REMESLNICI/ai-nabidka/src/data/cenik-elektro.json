@@ -2,28 +2,41 @@
   "hodinove_sazby": {
     "elektrikar_prvni_hodina": 500,
     "elektrikar_dalsi_hodina": 270,
-    "revizni_technik": 650,
     "vyjezd_pausal_3h": 1500
   },
   "polozky": [
-    { "nazev": "Zásuvka 230V montáž", "cena_ks": 350, "jednotka": "ks", "typ": "prace" },
-    { "nazev": "Vypínač jednoduchý", "cena_ks": 280, "jednotka": "ks", "typ": "prace" },
-    { "nazev": "Světelný bod", "cena_ks": 450, "jednotka": "ks", "typ": "prace" },
-    { "nazev": "Rozvody silnoproud", "cena_ks": 180, "jednotka": "bm", "typ": "material" },
-    { "nazev": "Rozvodnice 12 jističů", "cena_ks": 3500, "jednotka": "ks", "typ": "prace" },
-    { "nazev": "Datová zásuvka", "cena_ks": 420, "jednotka": "ks", "typ": "prace" },
-    { "nazev": "Sekání drážek panel", "cena_ks": 120, "jednotka": "bm", "typ": "prace" },
-    { "nazev": "Sekání drážek cihla", "cena_ks": 95, "jednotka": "bm", "typ": "prace" }
+    { "nazev": "Montáž a zapojení zásuvky", "cena_ks": 145, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Montáž a zapojení vypínače", "cena_ks": 140, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Montáž a zapojení svítidla", "cena_ks": 350, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Zapojení varné desky nebo trouby", "cena_ks": 500, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Zapojení jednofázového jističe", "cena_ks": 252, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Zapojení třífázového jističe", "cena_ks": 477, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Zapojení jednofázového proudového chrániče", "cena_ks": 340, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Zapojení třífázového proudového chrániče", "cena_ks": 495, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Zapojení hlavního vypínače", "cena_ks": 400, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Zapojení zvonku", "cena_ks": 185, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Zapojení ventilátoru", "cena_ks": 500, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Zapojení digestoře", "cena_ks": 500, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Zapojení bojleru", "cena_ks": 500, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Sekání šliců", "cena_ks": 65, "jednotka": "bm", "typ": "prace" },
+    { "nazev": "Vykroužení kapsy", "cena_ks": 75, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Sekání kapsy pro rozvaděč", "cena_ks": 450, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Tahání kabelu", "cena_ks": 60, "jednotka": "bm", "typ": "prace" },
+    { "nazev": "Osazení rozvaděče", "cena_ks": 450, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Osazení krabice", "cena_ks": 35, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Zapojení vodičů v krabici", "cena_ks": 40, "jednotka": "ks", "typ": "prace" },
+    { "nazev": "Demontáž staré elektroinstalace", "cena_ks": 1600, "jednotka": "komplet", "typ": "prace" }
   ],
   "balicky": [
     {
-      "nazev": "Komplet elektroinstalace byt 2+1 do 70m²",
-      "rozsah": "rozvody, zásuvky, vypínače, světla, rozvodnice",
+      "nazev": "Komplet elektroinstalace byt 2+1",
+      "rozsah": "rozvody, zásuvky, vypínače, svítidla, rozvaděč",
       "cena_od": 75000,
       "cena_do": 110000
     },
     {
-      "nazev": "Komplet elektroinstalace byt 3+1 do 90m²",
+      "nazev": "Komplet elektroinstalace byt 3+1",
+      "rozsah": "rozvody, zásuvky, vypínače, svítidla, rozvaděč",
       "cena_od": 95000,
       "cena_do": 140000
     }

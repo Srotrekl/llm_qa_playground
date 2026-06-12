@@ -20,6 +20,8 @@ interface FirmaConfig {
   dic: string;
   email: string;
   telefon: string;
+  /** Per-tenant přepínač brandmarku "Vytvořeno v AI Nabídka" v patičce. Default true. */
+  showBrandmark?: boolean;
 }
 
 function nactiFiremniUdaje(): FirmaConfig {
@@ -30,6 +32,8 @@ function nactiFiremniUdaje(): FirmaConfig {
       "[FIRMA] IČO je placeholder (12345678) — vyplňte src/data/firma.json před generováním nabídky.",
     );
   }
+  // Brandmark je defaultně zapnutý — starší firma.json bez pole funguje.
+  firma.showBrandmark = firma.showBrandmark ?? true;
   return firma;
 }
 
@@ -184,13 +188,22 @@ export function vyplnSablonu(template: string, nabidka: Nabidka, firma: FirmaCon
   // Upozornění na neznámé položky (prázdný string = blok se nezobrazí).
   const upozorneniHtml = sestavUpozorneni(nabidka.polozky);
 
+  // Brandmark v patičce — vypínatelný per-tenant přes firma.showBrandmark.
+  const brandmarkHtml = firma.showBrandmark
+    ? `<div class="paticka-brandmark">Vytvořeno v AI Nabídka</div>`
+    : "";
+
+  // IČO/DIČ řádek — DIČ se zobrazí jen pokud je vyplněné (plátce DPH).
+  const icoDicRadek = firma.dic
+    ? `IČO: ${escapeHtml(firma.ico)} &nbsp;|&nbsp; DIČ: ${escapeHtml(firma.dic)}`
+    : `IČO: ${escapeHtml(firma.ico)}`;
+
   // Replace skalárních placeholderů.
   html = html
     .replace(/\{\{firma_nazev\}\}/g, escapeHtml(firma.nazev))
     .replace(/\{\{firma_podnadpis\}\}/g, escapeHtml(firma.podnadpis))
     .replace(/\{\{firma_adresa\}\}/g, escapeHtml(firma.adresa))
-    .replace(/\{\{firma_ico\}\}/g, escapeHtml(firma.ico))
-    .replace(/\{\{firma_dic\}\}/g, escapeHtml(firma.dic))
+    .replace(/\{\{ico_dic_radek\}\}/g, icoDicRadek)
     .replace(/\{\{firma_email\}\}/g, escapeHtml(firma.email))
     .replace(/\{\{firma_telefon\}\}/g, escapeHtml(firma.telefon))
     .replace(/\{\{cislo\}\}/g, nabidka.cislo)
@@ -207,7 +220,8 @@ export function vyplnSablonu(template: string, nabidka: Nabidka, firma: FirmaCon
     .replace(/\{\{celkem\}\}/g, formatCislo(nabidka.celkem))
     .replace(/\{\{upozorneni_blok\}\}/g, upozorneniHtml)
     .replace(/\{\{banner_neuplna_nabidka\}\}/g, bannerHtml)
-    .replace(/\{\{dph_disclaimer\}\}/g, dphDisclaimerHtml);
+    .replace(/\{\{dph_disclaimer\}\}/g, dphDisclaimerHtml)
+    .replace(/\{\{brandmark\}\}/g, brandmarkHtml);
 
   return html;
 }
@@ -251,10 +265,10 @@ export async function generujPDF(
       format: "A4",
       printBackground: true,
       margin: {
-        top: "20mm",
-        bottom: "20mm",
-        left: "15mm",
-        right: "15mm",
+        top: "18mm",
+        bottom: "18mm",
+        left: "18mm",
+        right: "18mm",
       },
     });
   } catch (err) {

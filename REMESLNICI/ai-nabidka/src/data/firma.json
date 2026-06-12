@@ -1,9 +1,10 @@
 {
-  "nazev": "VAŠE FIRMA s.r.o.",
-  "podnadpis": "Profesionální elektroinstalace",
-  "adresa": "Ukázková 1, 110 00 Praha 1",
-  "ico": "12345678",
-  "dic": "CZ12345678",
-  "email": "info@vasefirma.cz",
-  "telefon": "+420 777 000 111"
+  "nazev": "Elektro Novák s.r.o.",
+  "podnadpis": "Elektroinstalace Ostrava a okolí",
+  "adresa": "Hlavní třída 583/105, 708 00 Ostrava-Poruba",
+  "ico": "28741536",
+  "dic": "CZ28741536",
+  "email": "info@elektro-novak.cz",
+  "telefon": "+420 596 123 456",
+  "showBrandmark": true
 }

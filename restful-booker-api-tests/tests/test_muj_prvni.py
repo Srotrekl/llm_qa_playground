@@ -31,3 +31,13 @@ def test_create_booking(booking_service):
     })
     assert response.status_code == 200
     assert response.json()["booking"]["firstname"] == "Steve"
+
+
+def test_delete_booking(booking_service, auth_token, created_booking):
+    booking_id = created_booking.bookingid
+
+    response = booking_service.delete_booking(booking_id, auth_token)
+    assert response.status_code == 201
+
+    verify = booking_service.get_booking(booking_id)
+    assert verify.status_code == 404

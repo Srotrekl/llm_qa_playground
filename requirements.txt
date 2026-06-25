@@ -1,10 +1,17 @@
-pytest==9.0.2
-playwright==1.58.0
-requests==2.32.5
-python-dotenv==1.2.2
-pydantic-settings==2.13.1
-pydantic==2.12.5
-allure-pytest==2.15.3
-jsonschema==4.26.0
-ruff==0.15.7
-pre-commit==4.5.1
+# Core test framework
+pytest==8.3.4
+pytest-asyncio==0.24.0
+allure-pytest==2.13.5
+
+# HTTP client
+httpx==0.28.1
+
+# Data models
+pydantic==2.10.4
+pydantic-settings==2.7.0
+
+# Linting (used in CI, installed in dev)
+ruff==0.9.1
+
+# Utilities
+python-dotenv==1.0.1
